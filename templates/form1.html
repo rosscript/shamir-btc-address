@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Inserisci i tuoi dati</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Inserisci i tuoi dati</h1>
+        </header>
+        <main>
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            <form action="{{ url_for('form') }}" method="post">
+                <div class="form-group">
+                    <label for="user_string">Stringa Alfanumerica:</label>
+                    <input type="text" id="user_string" name="user_string" required>
+                </div>
+                <div class="form-group">
+                    <label for="n">Numero totale di parti (n):</label>
+                    <input type="number" id="n" name="n" min="2" required>
+                </div>
+                <div class="form-group">
+                    <label for="k">Numero di parti necessarie (k):</label>
+                    <input type="number" id="k" name="k" min="2" required>
+                </div>
+                <button type="submit">Procedi</button>
+            </form>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+</body>
+</html>

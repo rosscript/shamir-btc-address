@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Risultato Verifica Hash</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Risultato Verifica Hash</h1>
+        </header>
+        <main>
+            <section class="result-section">
+                <p class="result-message {{ 'success' if hashes_match else 'failure' }}">{{ result }}</p>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+</body>
+</html>

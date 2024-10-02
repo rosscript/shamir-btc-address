@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Chiave Privata Ricostruita</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="{{ url_for('static', filename='js/qrcode.min.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Chiave Privata Ricostruita</h1>
+        </header>
+        <main>
+            <section class="success-message">
+                <p>La tua chiave privata è stata ricostruita con successo.</p>
+            </section>
+            <section class="private-key-section">
+                <h2>Chiave Privata (WIF):</h2>
+                <p class="private-key">{{ private_key }}</p>
+                <div id="qrcodePrivateKey" class="qrcode-large"></div>
+            </section>
+            <section class="notice">
+                <p><strong>Nota:</strong> Conserva questa chiave privata in un luogo sicuro e non condividerla con nessuno.</p>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+
+    <!-- Script per generare il codice QR -->
+    <script>
+        // Genera il codice QR della chiave privata
+        new QRCode(document.getElementById("qrcodePrivateKey"), {
+            text: "{{ private_key }}",
+            width: 256,
+            height: 256,
+        });
+    </script>
+</body>
+</html>

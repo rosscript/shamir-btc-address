@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Verifica Hash della Chiave Privata</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Verifica Hash della Chiave Privata</h1>
+        </header>
+        <main>
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            <form id="verifyForm" action="{{ url_for('verify') }}" method="post">
+                <div class="form-group">
+                    <label for="k">Numero di parti necessarie (k):</label>
+                    <input type="number" id="k" name="k" min="2" required>
+                </div>
+                <div class="form-group">
+                    <label for="master_key">Chiave Master (p_base64):</label>
+                    <textarea id="master_key" name="master_key" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="private_key_hash">Hash SHA256 della Chiave Privata:</label>
+                    <input type="text" id="private_key_hash" name="private_key_hash" required>
+                </div>
+                <!-- Sezione per l'inserimento delle parti -->
+                <div id="sharesSection">
+                    <div class="form-group">
+                        <label for="shareInput">Inserisci la parte 1 (formato: x,y_base64):</label>
+                        <textarea id="shareInput" name="shareInput" rows="2" required></textarea>
+                    </div>
+                    <button type="button" id="nextButton" onclick="addShare()">Avanti</button>
+                </div>
+                <!-- Pulsante di submit nascosto inizialmente -->
+                <button type="submit" id="submitButton" style="display: none;">Verifica Hash</button>
+                <!-- Campo nascosto per le shares -->
+                <input type="hidden" id="shares" name="shares" value="">
+            </form>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+
+    <script>
+        let shares = [];
+        let kInput = document.getElementById('k');
+        let shareInput = document.getElementById('shareInput');
+        let sharesField = document.getElementById('shares');
+        let submitButton = document.getElementById('submitButton');
+        let nextButton = document.getElementById('nextButton');
+        let currentShareIndex = 1;
+
+        function addShare() {
+            let k = parseInt(kInput.value);
+            if (isNaN(k) || k < 2) {
+                alert('Per favore, inserisci un valore valido per k (minimo 2).');
+                return;
+            }
+
+            let shareValue = shareInput.value.trim();
+            if (shareValue === '') {
+                alert('Per favore, inserisci una parte valida.');
+                return;
+            }
+
+            // Aggiungi la share all'array
+            shares.push(shareValue);
+
+            // Pulisci il campo di input
+            shareInput.value = '';
+            currentShareIndex++;
+
+            if (shares.length === k) {
+                // Nascondi la sezione delle shares
+                document.getElementById('sharesSection').style.display = 'none';
+                // Rimuovi l'attributo 'required' dal campo 'shareInput'
+                shareInput.required = false;
+
+                // Mostra il pulsante "Verifica Hash"
+                submitButton.style.display = 'block';
+
+                // Aggiorna il campo nascosto con le shares
+                sharesField.value = shares.join('\n');
+            } else {
+                // Aggiorna l'etichetta per l'inserimento della prossima share
+                document.querySelector('label[for="shareInput"]').innerText = 'Inserisci la parte ' + currentShareIndex + ' (formato: x,y_base64):';
+            }
+        }
+    </script>
+</body>
+</html>

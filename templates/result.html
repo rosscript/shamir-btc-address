@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Risultati</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="{{ url_for('static', filename='js/qrcode.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/print_functions.js') }}"></script>
+    <script>
+        let shares = {{ shares | tojson }};
+        let userIndex = 0;
+        let state = 'user';
+
+        function generateQRCode(elementId, text, size = 128) {
+            let qrcodeContainer = document.getElementById(elementId);
+            qrcodeContainer.innerHTML = "";
+            new QRCode(qrcodeContainer, {
+                text: text,
+                width: size,
+                height: size,
+            });
+        }
+
+        function showContent() {
+            let contentElement = document.getElementById('dialogContent');
+            let currentPartElement = document.getElementById('currentPart');
+            let qrContainer = document.querySelector('.dialog-qr-container');
+            let printButton = document.getElementById('printButton');
+            currentPartElement.textContent = userIndex + 1;
+
+            if (state === 'user') {
+                contentElement.innerHTML = '<p class="share-title">UTENTE ' + (userIndex + 1) + '</p>';
+                qrContainer.style.display = 'none';
+                printButton.style.display = 'none';
+            } else if (state === 'share') {
+                let share = shares[userIndex];
+                let shareText = 'x = ' + share[0] + ', y = ' + share[1];
+
+                let shareTextPart1 = shareText.substring(0, Math.ceil(shareText.length / 2));
+                let shareTextPart2 = shareText.substring(Math.ceil(shareText.length / 2));
+
+                contentElement.innerHTML = '<p class="share-text">' + shareText + '</p>';
+
+                generateQRCode('qrcodeDialogPart1', shareTextPart1, 200);
+                generateQRCode('qrcodeDialogPart2', shareTextPart2, 200);
+                qrContainer.style.display = 'flex';
+                printButton.style.display = 'inline-block';
+            }
+
+            if (state === 'user') {
+                document.getElementById('nextButton').innerText = 'Avanti';
+            } else if (state === 'share') {
+                if (userIndex < shares.length - 1) {
+                    document.getElementById('nextButton').innerText = 'Avanti';
+                } else {
+                    document.getElementById('nextButton').innerText = 'Fine';
+                }
+            }
+        }
+
+        function next() {
+            if (state === 'user') {
+                state = 'share';
+                showContent();
+            } else if (state === 'share') {
+                if (userIndex < shares.length - 1) {
+                    userIndex++;
+                    state = 'user';
+                    showContent();
+                } else {
+                    closeSharesDialog();
+                }
+            }
+        }
+
+        function openSharesDialog() {
+            document.getElementById('sharesDialog').style.display = 'flex';
+            document.querySelector('.open-dialog-button').style.display = 'none';
+            document.body.style.overflow = 'hidden';
+            userIndex = 0;
+            state = 'user';
+            showContent();
+        }
+
+        function closeSharesDialog() {
+            document.getElementById('sharesDialog').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function printCurrentShare() {
+            if (state === 'share') {
+                let share = shares[userIndex];
+                let shareText = 'x = ' + share[0] + ', y = ' + share[1];
+                let qrCode1 = document.getElementById('qrcodeDialogPart1').querySelector('canvas').toDataURL();
+                let qrCode2 = document.getElementById('qrcodeDialogPart2').querySelector('canvas').toDataURL();
+                printPart(userIndex, shareText, qrCode1, qrCode2);
+            }
+        }
+
+        window.onload = function() {
+            generateQRCode('qrcodeAddress', '{{ bitcoin_address }}', 158);
+            generateQRCode('qrcodeHash', '{{ private_key_hash }}', 158);
+
+            // Dividi la chiave master in due metà
+            let masterKey = '{{ master_key }}';
+            let masterKeyPart1 = masterKey.substring(0, Math.ceil(masterKey.length / 2));
+            let masterKeyPart2 = masterKey.substring(Math.ceil(masterKey.length / 2));
+
+            // Genera i QR code per le due metà della chiave master
+            generateQRCode('qrcodeMasterKeyPart1', masterKeyPart1, 158);
+            generateQRCode('qrcodeMasterKeyPart2', masterKeyPart2, 158);
+
+            showContent();
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Indirizzo Bitcoin Generato</h1>
+        </header>
+        <main>
+            <section class="notice">
+                <p>Assicurati di conservare la chiave master e le parti generate in luoghi sicuri. Avrai bisogno della chiave master e di almeno {{ k }} parti su {{ n }} per ricostruire la tua chiave privata.</p>
+            </section>
+            <section class="info-section">
+                <div class="section-box">
+                    <h3>Bitcoin Address</h3>
+                    <div class="content-wrapper">
+                        <div class="qr-container">
+                            <div id="qrcodeAddress" class="qrcode-large"></div>
+                        </div>
+                        <div class="info-container">
+                            <p class="info-text">{{ bitcoin_address }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-section">
+                <div class="section-box">
+                    <h3>SHA256 Private Key</h3>
+                    <div class="content-wrapper">
+                        <div class="qr-container">
+                            <div id="qrcodeHash" class="qrcode-large"></div>
+                        </div>
+                        <div class="info-container">
+                            <p class="info-text">{{ private_key_hash }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="master-section">
+                <div class="section-box">
+                    <h3>Master Key</h3>
+                    <div class="content-wrapper">
+                        <div class="qr-container">
+                            <div id="qrcodeMasterKeyPart1" class="qrcode"></div>
+                            <div id="qrcodeMasterKeyPart2" class="qrcode"></div>
+                        </div>
+                        <div class="info-container">
+                            <p class="info-text">{{ master_key }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="button-group">
+                <button onclick="printNCopies()" class="print-button">Stampa {{ n }} copie</button>
+                <button onclick="openSharesDialog()" class="open-dialog-button">Mostra parti</button>
+            </div>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+
+    <div id="sharesDialog" class="dialog-overlay">
+        <div class="dialog-content">
+            <h3>Parte <span id="currentPart">1</span> della Chiave Privata (n={{ n }}, k={{ k }}):</h3>
+            <div class="content-wrapper">
+                <div class="dialog-qr-container">
+                    <div id="qrcodeDialogPart1" class="qrcode"></div>
+                    <div id="qrcodeDialogPart2" class="qrcode"></div>
+                </div>
+                <div id="dialogContent" class="share-content"></div>
+            </div>
+            <div class="button-group">
+                <button id="printButton" onclick="printCurrentShare()" style="display: none;">Stampa</button>
+                <button id="nextButton" onclick="next()">Avanti</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

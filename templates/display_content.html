@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Contenuto Scansionato</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Include la libreria html5-qrcode localmente -->
+    <script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Scansione QR Code</h1>
+        </header>
+        <main>
+            <!-- Area per visualizzare il contenuto scansionato -->
+            <div class="scan-result">
+                <label for="qr-content">Contenuto del QR Code:</label>
+                <textarea id="qr-content" readonly>{{ qr_content }}</textarea>
+                <div class="button-group">
+                    <button id="copy-btn">Copia</button>
+                    <button id="new-scan-btn">Nuova Scansione</button>
+                </div>
+            </div>
+
+            <!-- Area per la scansione del QR code -->
+            <div id="qr-reader" class="qr-reader"></div>
+
+            <!-- Form nascosto per aggiornare il contenuto scansionato -->
+            <form id="qr-form" method="post" style="display:none;">
+                <input type="hidden" name="qr_content" id="qr_content_input">
+            </form>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+
+    <script>
+        // Funzione per copiare il contenuto negli appunti
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const content = document.getElementById('qr-content');
+            content.select();
+            document.execCommand('copy');
+            alert('Contenuto copiato negli appunti');
+        });
+
+        // Gestione del pulsante "Nuova Scansione"
+        document.getElementById('new-scan-btn').addEventListener('click', function() {
+            // Mostra l'area di scansione
+            document.getElementById('qr-reader').style.display = 'block';
+            // Nascondi il pulsante "Nuova Scansione"
+            document.getElementById('new-scan-btn').style.display = 'none';
+
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            const qrCodeSuccessCallback = function(decodedText, decodedResult) {
+                // Ferma la scansione
+                html5QrCode.stop().then(ignore => {
+                    // Nascondi il lettore QR
+                    document.getElementById('qr-reader').style.display = 'none';
+                    // Mostra il pulsante "Nuova Scansione"
+                    document.getElementById('new-scan-btn').style.display = 'inline-block';
+                    // Aggiorna il contenuto visualizzato
+                    document.getElementById('qr-content').value = decodedText;
+                    // Aggiorna l'input nascosto nel form
+                    document.getElementById('qr_content_input').value = decodedText;
+                }).catch(err => {
+                   console.log('Errore nello stop della scansione', err);
+                });
+            };
+            const config = { fps: 10, qrbox: 250 };
+            html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+        });
+    </script>
+</body>
+</html>

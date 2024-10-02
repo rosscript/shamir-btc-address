@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Wallet Bitcoin Sicuro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Wallet Bitcoin Sicuro</h1>
+        </header>
+        <main>
+            <!-- Nuovo riquadro con paragrafo introduttivo -->
+            <div class="intro-box">
+                <p>Benvenuti nel Wallet Bitcoin Sicuro, uno strumento avanzato sviluppato dalla Sezione Criptovalute dei Carabinieri. Questo software permette di creare, verificare e ricostruire chiavi private Bitcoin in modo sicuro e affidabile. Utilizzate le funzioni sottostanti per gestire le vostre operazioni Bitcoin in tutta sicurezza.</p>
+            </div>
+
+            <!-- Pulsanti in linea senza riquadro esterno -->
+            <div class="inline-buttons">
+                <button onclick="window.location.href='{{ url_for('form') }}'">Crea un nuovo indirizzo Bitcoin</button>
+                <button onclick="window.location.href='{{ url_for('verify') }}'">Verifica Hash della Chiave Privata</button>
+                <button onclick="window.location.href='{{ url_for('reconstruct') }}'">Ricostruisci la Chiave Privata</button>
+                <button id="scan-qr" onclick="window.location.href='{{ url_for('display_scanned_content') }}'">Scansiona QR Code</button>
+            </div>
+
+            <!-- Area per la scansione del QR code -->
+            <div id="qr-reader" style="width:500px; display:none; margin-top:20px;"></div>
+
+            <!-- Form nascosto per inviare il contenuto al server -->
+            <form id="qr-form" action="{{ url_for('display_scanned_content') }}" method="post" style="display:none;">
+                <input type="hidden" name="qr_content" id="qr_content_input">
+            </form>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Inserisci i tuoi dati</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Nuovo indirizzo Bitcoin</h1>
+        </header>
+        <main>
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            <form action="{{ url_for('form') }}" method="post">
+                <div class="form-group">
+                    <label for="user_string">Stringa Alfanumerica:</label>
+                    <input type="text" id="user_string" name="user_string" required>
+                </div>
+                <div class="form-flex-container">
+                    <div class="slider-container">
+                        <div class="form-group slider-group">
+                            <label for="n">Numero totale di parti (n):</label>
+                            <div class="slider-input">
+                                <input type="range" id="n_slider" min="2" max="10" value="5" class="slider">
+                                <input type="number" id="n" name="n" min="2" max="10" value="5" required>
+                            </div>
+                        </div>
+                        <div class="form-group slider-group">
+                            <label for="k">Numero di parti necessarie (k):</label>
+                            <div class="slider-input">
+                                <input type="range" id="k_slider" min="2" max="10" value="3" class="slider">
+                                <input type="number" id="k" name="k" min="2" max="10" value="3" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pie-chart-container">
+                        <canvas id="pieChart" width="200" height="200"></canvas>
+                    </div>
+                </div>
+                <button type="submit">Procedi</button>
+            </form>
+        </main>
+        <footer>
+            <p>&copy; 2024 Carabinieri Cryptocurrencies Section</p>
+        </footer>
+    </div>
+
+    <script>
+        function updateSliderAndInput(sliderId, inputId) {
+            const slider = document.getElementById(sliderId);
+            const input = document.getElementById(inputId);
+            
+            slider.oninput = function() {
+                input.value = this.value;
+                if (sliderId === 'n_slider') {
+                    document.getElementById('k_slider').max = this.value;
+                    document.getElementById('k').max = this.value;
+                    if (parseInt(document.getElementById('k').value) > parseInt(this.value)) {
+                        document.getElementById('k').value = this.value;
+                        document.getElementById('k_slider').value = this.value;
+                    }
+                }
+                updatePieChart();
+            }
+            
+            input.oninput = function() {
+                slider.value = this.value;
+                if (inputId === 'n') {
+                    document.getElementById('k_slider').max = this.value;
+                    document.getElementById('k').max = this.value;
+                    if (parseInt(document.getElementById('k').value) > parseInt(this.value)) {
+                        document.getElementById('k').value = this.value;
+                        document.getElementById('k_slider').value = this.value;
+                    }
+                }
+                updatePieChart();
+            }
+        }
+
+        function updatePieChart() {
+            const n = parseInt(document.getElementById('n').value);
+            const k = parseInt(document.getElementById('k').value);
+            const canvas = document.getElementById('pieChart');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+            
+            // Disegna il cerchio di sfondo
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#cccccc';
+            ctx.fill();
+            
+            // Disegna gli spicchi con bordi bianchi
+            for (let i = 0; i < n; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                const startAngle = (i / n) * 2 * Math.PI;
+                const endAngle = ((i + 1) / n) * 2 * Math.PI;
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.fillStyle = i < k ? '#000000' : '#cccccc';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        updateSliderAndInput('n_slider', 'n');
+        updateSliderAndInput('k_slider', 'k');
+        updatePieChart();
+    </script>
+</body>
+</html>
